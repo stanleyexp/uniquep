@@ -1,11 +1,16 @@
 [tool.poetry]
 name = "uniquep"
 version = "1.0.0"
+authors = ["tingwei628"]
 description = ""
-authors = ["Your Name <you@example.com>"]
+packages = [
+    # { include = "src"}
+]
+
 
 [tool.poetry.dependencies]
 python = "^3.8"
+dragonmapper = "^0.2.6"
 
 [tool.poetry.dev-dependencies]
 
