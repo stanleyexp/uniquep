@@ -38,9 +38,8 @@ def ping_to_ipa(input_file, output_file):
                     new_row.append(col[0])
                     new_row.append(col[1])
                     new_row.append(col[2].strip())
-                    col_2_no_notation = col[2]
                     ipa = transcriptions.pinyin_to_ipa(
-                        convert(col_2_no_notation))
+                        convert(col[2]))
                     new_row.append(ipa.strip())
                     writer.writerow(new_row)
 
@@ -49,7 +48,8 @@ def ping_to_ipa(input_file, output_file):
                     print(col)
                     print(str(e))
 
-def convert(col_string):
+
+def convert(col_string, has_notation=False):
     """"
     yo->yao
     lv->lyu
@@ -62,22 +62,32 @@ def convert(col_string):
     for index, col1 in enumerate(col_list):
         
         if re.search(r'yo\d', col1):
-            col_list[index] = re.sub(r'yo', 'yao', col1)
+            p1 = r'yo' if has_notation else r'yo\d'
+            col_list[index] = re.sub(p1, 'yao', col1)
         elif re.search(r'lv\d', col1):
-            col_list[index] = re.sub(r'lv', 'lyu', col1)
+            p2 = r'lv' if has_notation else r'lv\d'
+            col_list[index] = re.sub(p2, 'lyu', col1)
         elif re.search(r'nv\d', col1):
-            col_list[index] = re.sub(r'nv', 'nyu', col1)
+            p3 = r'nv' if has_notation else r'nv\d'
+            col_list[index] = re.sub(p3, 'nyu', col1)
         elif re.search(r'ei\d', col1):
-            col_list[index] = re.sub(r'ei', 'e', col1)
+            p4 = r'ei' if has_notation else r'ei\d'
+            col_list[index] = re.sub(p4, 'e', col1)
         elif re.search(r'dia\d', col1):
-            col_list[index] = re.sub(r'dia', 'dya', col1)
+            p5 = r'dia' if has_notation else r'dia\d'
+            col_list[index] = re.sub(p5, 'dya', col1)
+        else:
+            if not has_notation:
+                col_list[index] = re.sub(r'\d$', '', col1)
 
     return ' '.join(col_list)
     
 def start():
     # txt_to_csv("cidian_zhzh-kfcd-2021714.txt", "cidian_zhzh-kfcd-2021714.csv")
+    # ping_to_ipa("cidian_zhzh-kfcd-2021714.csv", 
+    #     "cidian_zhzh-kfcd-2021714-ipa.csv")
     ping_to_ipa("cidian_zhzh-kfcd-2021714.csv", 
-        "cidian_zhzh-kfcd-2021714-ipa.csv")
+        "cidian_zhzh-kfcd-2021714-no-notation-ipa.csv")
 
     # parse
     # analyze
