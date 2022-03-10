@@ -1,4 +1,6 @@
 import csv
+import sys
+sys.path.append('dragonmapper')
 from dragonmapper import transcriptions, hanzi
 from os import path
 import re
@@ -38,8 +40,10 @@ def ping_to_ipa(input_file, output_file):
                     new_row.append(col[0])
                     new_row.append(col[1])
                     new_row.append(col[2].strip())
-                    ipa = transcriptions.pinyin_to_ipa(
-                        convert(col[2]))
+                    # ipa = transcriptions.pinyin_to_ipa(
+                    #     convert(col[2]))
+                    # ipa = transcriptions.pinyin_to_ipa(col[2])
+                    ipa = transcriptions.pinyin_to_ipa(col[2])
                     new_row.append(ipa.strip())
                     writer.writerow(new_row)
 
