@@ -1,3 +1,8 @@
 [submodule "dragonmapper"]
 	path = dragonmapper
 	url = https://github.com/stanleyexp/dragonmapper.git
+
+#### sync fork repo
+# git submodule update --remote
+#### cherry pick commit from anthoer repo
+# git fetch [branch URL] [Branch to cherry-pick from] && git cherry-pick [commit ID]
