@@ -1,5 +1,5 @@
 # uniquep
 
 ## Changelog
-- pingyin to IPA
-
+- pingyin to IPA (notone)
+- IPA to uniqueness point (notone)

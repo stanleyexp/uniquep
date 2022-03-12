@@ -4,6 +4,7 @@ sys.path.append('dragonmapper')
 from dragonmapper import transcriptions, hanzi
 from os import path
 import re
+from itertools import tee
 
 
 def txt_to_csv(input_file, output_file):
@@ -69,71 +70,61 @@ def convert(col_string, has_notation=False):
 """
 reference: https://github.com/TheAlgorithms/Python/blob/master/data_structures/trie/trie.py
 """
-def print_trie(node, word):
+def print_trie(node, word, level, print_list):
     if node.is_leaf:
-        print(word, end=' ')
+        print('->' + '->'.join(print_list), end=' ')
+        print(' ')
     for key, value, in node.nodes.items():
-        print(key)
-        print_trie(value, key)
+        print_trie(value, key, level+1, print_list + [key])
 
 class TrieNode():
     def __init__(self):
         self.nodes: dict[str, TrieNode] = dict()
         self.is_leaf = False
-    def insert(self, ipa_list):
+        self.parent: TrieNode = None
+    def insert(self, ipa_list, dict_leaf):
         curr = self
         for ipa_w in ipa_list:
             if ipa_w not in curr.nodes:
-                curr.nodes[ipa_w] = TrieNode()
+                child = TrieNode()
+                child.parent = curr
+                curr.nodes[ipa_w] = child
             curr = curr.nodes[ipa_w]
         curr.is_leaf = True
-        # for ipa in ipa_list:
-        #     for ipa_ch in ipa:
-        #         if ipa_ch not in curr.nodes:
-        #             curr.nodes[ipa_ch] = TrieNode()
-        #         curr = curr.nodes[ipa_ch]
-        #     curr.is_leaf = True
+        dict_leaf[' '.join(ipa_list)] = curr
 
     # return tuple(int, str):
-    def find_uniq(self, ipa_list):
-        curr = self
-        print("ipa_list", ipa_list)
-        for ipa_w in ipa_list:
-            keys_list = list(curr.nodes.keys())
-            child_num = len(keys_list)
-            print("keys_list", keys_list)
-            if child_num == 1:
-                index = ipa_list.index(keys_list[0]) + 1
-                print('ipa_list[index]', ipa_list[index])
-                return index, ipa_list[index]
-            elif curr.is_leaf:
-                return 1,''
-            curr = curr.nodes[ipa_w]
-
-        # for index, ipa_ch in enumerate(ipa):
-        #     child_num = len(curr.nodes.keys())
-        #     if child_num == 1:
-        #         return index, ipa[index+1]
-        #     # elif child_num == 0:
-        #     #     return index, ipa_ch
-        #     curr = curr.nodes[ipa_ch]
+    def find_uniq(self, ipa_list, leaf_node):
+        curr = leaf_node
+        for ipa_w in ipa_list[::-1]:
+            # if curr.parent == root
+            if curr.parent is None:
+                return 0, ipa_list[0]
+            child_num = len(curr.parent.nodes.keys())
+            if child_num > 1:
+                return ipa_list.index(ipa_w), ipa_w
+            curr = curr.parent 
+     
 # return dict[str, (int, str)]
 def build_dic_uniq(lines):
     root = TrieNode()
+    # dic[leaf_node, TrieNode]
+    dict_leaf = dict()
     for _, col in enumerate(lines[:]):
         ipa = col[3].strip()
-        root.insert(ipa.split(' '))
-    print_trie(root, '')
-    return
+        root.insert(ipa.split(' '), dict_leaf)
+
+    # print_trie(root, '', level=0, print_list=[])
+    # return
+    
     # dic[str, (uniq_ipa_index, uniq_ipa_ch)]
     dic_uniq = dict()
     for _, col in enumerate(lines[:]):
         ipa = col[3].strip()
-        dic_uniq[ipa] = root.find_uniq(ipa.split(' '))
-        print(dic_uniq[ipa])
-        print("=================================")
-        # print("dic_uniq[ipa][0]", dic_uniq[ipa][0])
-        # print("dic_uniq[ipa][1]", dic_uniq[ipa][1])
+        leaf_node = dict_leaf[ipa]
+        dic_uniq[ipa] = root.find_uniq(ipa.split(' '), leaf_node)
+        # print(dic_uniq[ipa])
+        # print("=================================")
     return dic_uniq
 
 
@@ -145,35 +136,37 @@ def create_uniquep(input_file, output_file):
 
     with open(input_file, 'r') as in_file:
         lines = (line.split(",") for line in in_file if line)
-        dict_uniq = build_dic_uniq(list(lines))
-        # with open(output_file, 'w') as out_file:
-        #     writer = csv.writer(out_file, delimiter=',')
-        #     for index, col in enumerate(lines):
-        #         try:
-        #             new_row = []
-        #             new_row.append(col[0])
-        #             new_row.append(col[1])
-        #             new_row.append(col[2].strip())
-        #             ipa = col[3].strip()
-        #             new_row.append(ipa)
-        #             uniq_tuple = dict_uniq[ipa]
-        #             uniq_index = uniq_tuple[0]
-        #             uniq_ch = uniq_tuple[1]
-        #             new_row.append(str(uniq_index).strip())
-        #             new_row.append(uniq_ch.strip())
-        #             writer.writerow(new_row)
+        # copy generator
+        lines, lines_copy = tee(lines)
+        dict_uniq = build_dic_uniq(list(lines_copy))
+        with open(output_file, 'w') as out_file:
+            writer = csv.writer(out_file, delimiter=',')
+            for index, col in enumerate(lines):
+                try:
+                    new_row = []
+                    new_row.append(col[0])
+                    new_row.append(col[1])
+                    new_row.append(col[2].strip())
+                    ipa = col[3].strip()
+                    new_row.append(ipa)
+                    uniq_tuple = dict_uniq[ipa]
+                    uniq_index = uniq_tuple[0]
+                    uniq_ch = uniq_tuple[1]
+                    new_row.append(str(uniq_index).strip())
+                    new_row.append(uniq_ch.strip())
+                    writer.writerow(new_row)
 
-        #         except Exception as e:
-        #             print(index)
-        #             print(col)
-        #             print(str(e))
+                except Exception as e:
+                    print(index)
+                    print(col)
+                    print(str(e))
 
 
 
 def start():
-    # txt_to_csv("cidian_zhzh-kfcd-2021714.txt',
+    # txt_to_csv('cidian_zhzh-kfcd-2021714.txt',
     #     'cidian_zhzh-kfcd-2021714.csv')
-    # ping_to_ipa("cidian_zhzh-kfcd-2021714.csv', 
+    # ping_to_ipa('cidian_zhzh-kfcd-2021714.csv', 
     #     'cidian_zhzh-kfcd-2021714-ipa.csv')
     # ping_to_ipa('cidian_zhzh-kfcd-2021714.csv', 
     #     'cidian_zhzh-kfcd-2021714-no-notation-ipa.csv')
