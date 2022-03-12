@@ -128,7 +128,6 @@ def build_dic_uniq(lines):
         root.insert(ipa, split_ipa(ipa), dict_leaf)
 
     # print_trie(root, '', level=0, print_list=[])
-    # return
     
     # dic[str, (uniq_ipa_index, uniq_ipa_ch)]
     dic_uniq = dict()
