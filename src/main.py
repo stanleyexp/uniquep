@@ -1,7 +1,7 @@
 import csv
 import sys
 sys.path.append('dragonmapper')
-from dragonmapper import transcriptions, hanzi
+from dragonmapper import transcriptions
 from os import path
 import re
 from itertools import tee
@@ -82,7 +82,7 @@ class TrieNode():
         self.nodes: dict[str, TrieNode] = dict()
         self.is_leaf = False
         self.parent: TrieNode = None
-    def insert(self, ipa_list, dict_leaf):
+    def insert(self, ipa, ipa_list, dict_leaf):
         curr = self
         for ipa_w in ipa_list:
             if ipa_w not in curr.nodes:
@@ -91,20 +91,33 @@ class TrieNode():
                 curr.nodes[ipa_w] = child
             curr = curr.nodes[ipa_w]
         curr.is_leaf = True
-        dict_leaf[' '.join(ipa_list)] = curr
+        dict_leaf[ipa] = curr
 
     # return tuple(int, str):
     def find_uniq(self, ipa_list, leaf_node):
         curr = leaf_node
-        for ipa_w in ipa_list[::-1]:
+        for index in range(len(ipa_list)-1, -1, -1):
             # if curr.parent == root
             if curr.parent is None:
                 return 0, ipa_list[0]
             child_num = len(curr.parent.nodes.keys())
             if child_num > 1:
-                return ipa_list.index(ipa_w), ipa_w
-            curr = curr.parent 
-     
+                return index, ipa_list[index]
+            curr = curr.parent
+
+
+def split_ipa(ipa):
+    ipa_list = list(ipa)
+    for index, ipa_ch in enumerate(ipa_list):
+        if ipa_ch == ' ':
+            ipa_list.remove(ipa_ch)
+            continue
+        if ipa_ch == 'ʰ':
+            # merge
+            ipa_list[index-1:index+1] = [''.join(ipa_list[index-1:index+1])]
+        
+    return  ipa_list
+
 # return dict[str, (int, str)]
 def build_dic_uniq(lines):
     root = TrieNode()
@@ -112,7 +125,7 @@ def build_dic_uniq(lines):
     dict_leaf = dict()
     for _, col in enumerate(lines[:]):
         ipa = col[3].strip()
-        root.insert(ipa.split(' '), dict_leaf)
+        root.insert(ipa, split_ipa(ipa), dict_leaf)
 
     # print_trie(root, '', level=0, print_list=[])
     # return
@@ -122,9 +135,7 @@ def build_dic_uniq(lines):
     for _, col in enumerate(lines[:]):
         ipa = col[3].strip()
         leaf_node = dict_leaf[ipa]
-        dic_uniq[ipa] = root.find_uniq(ipa.split(' '), leaf_node)
-        # print(dic_uniq[ipa])
-        # print("=================================")
+        dic_uniq[ipa] = root.find_uniq(split_ipa(ipa), leaf_node)
     return dic_uniq
 
 
@@ -171,10 +182,10 @@ def start():
     # ping_to_ipa('cidian_zhzh-kfcd-2021714.csv', 
     #     'cidian_zhzh-kfcd-2021714-no-notation-ipa.csv')
     
-    # create_uniquep('cidian_zhzh-kfcd-2021714-no-notation-ipa.csv',
-    #     'uniquep-no-notation-ipa.csv')
-    create_uniquep('test.csv',
+    create_uniquep('cidian_zhzh-kfcd-2021714-no-notation-ipa.csv',
         'uniquep-no-notation-ipa.csv')
+    # create_uniquep('test.csv',
+    #     'uniquep-no-notation-ipa.csv')
 
 if __name__ == "__main__":
     start()
