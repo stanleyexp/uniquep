@@ -19,8 +19,34 @@ def txt_to_csv(input_file, output_file):
             writer = csv.writer(out_file)
             writer.writerows(lines)
 
+#  漢語拼音(教育部辭典) -> 漢語拚音+數字聲調
+def pinyin1_to_pinyin2(input_file, output_file):
+    current_dir = path.dirname(__file__)
+    input_file = path.join(current_dir, input_file)
+    output_file = path.join(current_dir, output_file)
+    with open(input_file, 'r') as in_file:
+        lines = (line.split(",") for line in in_file if line)
+        with open(output_file, 'w') as out_file:
+            writer = csv.writer(out_file, delimiter=',')
+            for index, col in enumerate(lines):
+                try:
+                    # ignore word without pinyin
+                    if (col[2].strip() == ''):
+                        continue
+                    new_row = []
+                    new_row.append(col[0])
+                    new_row.append(col[1])
+                    ping2 = transcriptions.accented_to_numbered(convert(col[2]))
+                    new_row.append(ping2.strip())
+                    writer.writerow(new_row)
 
-def ping_to_ipa(input_file, output_file):
+                except Exception as e:
+                    print(index)
+                    print(col)
+                    print(str(e))
+
+
+def pinyin_to_ipa(input_file, output_file):
     """
     current package: https://github.com/stanleyexp/dragonmapper
     another package: https://github.com/Connum/npm-pinyin2ipa
@@ -64,7 +90,7 @@ def convert(col_string, has_notation=False):
             col_list[index] = re.sub(p3, 'ü', col1)
         else:
             if not has_notation:
-                col_list[index] = re.sub(r'\d$', '', col1)
+                col_list[index] = re.sub(r'\d', '', col1)
 
     return ' '.join(col_list)
 """
@@ -176,15 +202,20 @@ def create_uniquep(input_file, output_file):
 def start():
     # txt_to_csv('cidian_zhzh-kfcd-2021714.txt',
     #     'cidian_zhzh-kfcd-2021714.csv')
-    # ping_to_ipa('cidian_zhzh-kfcd-2021714.csv', 
+    # pinyin_to_ipa('cidian_zhzh-kfcd-2021714.csv', 
     #     'cidian_zhzh-kfcd-2021714-ipa.csv')
-    # ping_to_ipa('cidian_zhzh-kfcd-2021714.csv', 
-    #     'cidian_zhzh-kfcd-2021714-no-notation-ipa.csv')
-    
-    create_uniquep('cidian_zhzh-kfcd-2021714-no-notation-ipa.csv',
-        'uniquep-no-notation-ipa.csv')
-    # create_uniquep('test.csv',
-    #     'uniquep-no-notation-ipa.csv')
+    # pinyin_to_ipa('cidian_zhzh-kfcd-2021714.csv', 
+    #     'cidian_zhzh-kfcd-2021714-notune-ipa.csv')
+    # create_uniquep('cidian_zhzh-kfcd-2021714-notune-ipa.csv',
+    #     'uniquep-cidian_zhzh-kfcd-2021714-notune-ipa.csv')
+
+    # pinyin1_to_pinyin2('dict_revised_2015_20211228-rawdata.csv',
+    #     'dict_revised_2015_20211228.csv')
+    # pinyin_to_ipa('dict_revised_2015_20211228.csv', 
+    #     'dict_revised_2015_20211228-notune-ipa.csv')
+    create_uniquep('dict_revised_2015_20211228-notune-ipa.csv',
+        'uniquep-dict_revised_2015_20211228-notune-ipa.csv')
+
 
 if __name__ == "__main__":
     start()
