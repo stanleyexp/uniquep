@@ -36,7 +36,9 @@ def pinyin1_to_pinyin2(input_file, output_file):
                     new_row = []
                     new_row.append(col[0])
                     new_row.append(col[1])
-                    ping2 = transcriptions.accented_to_numbered(convert(col[2]))
+                    # replace tone 5 as ''
+                    ping2 = re.sub(r'5', '',
+                        transcriptions.accented_to_numbered(convert(col[2])))
                     new_row.append(ping2.strip())
                     writer.writerow(new_row)
 
