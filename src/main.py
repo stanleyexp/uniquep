@@ -46,7 +46,7 @@ def pinyin1_to_pinyin2(input_file, output_file):
                     print(str(e))
 
 
-def pinyin_to_ipa(input_file, output_file, has_notation=False):
+def pinyin_to_ipa(input_file, output_file, has_tone=False):
     """
     current package: https://github.com/stanleyexp/dragonmapper
     another package: https://github.com/Connum/npm-pinyin2ipa
@@ -67,7 +67,7 @@ def pinyin_to_ipa(input_file, output_file, has_notation=False):
                     new_row.append(col[1])
                     new_row.append(col[2].strip())
                     ipa = transcriptions.pinyin_to_ipa2(
-                        convert(col[2], has_notation))
+                        convert(col[2], has_tone))
                     new_row.append(ipa.strip())
                     writer.writerow(new_row)
 
@@ -77,20 +77,20 @@ def pinyin_to_ipa(input_file, output_file, has_notation=False):
                     print(str(e))
 
 
-def convert(col_string, has_notation=False):
+def convert(col_string, has_tone=False):
 
     col_list = col_string.split(" ")
 
     for index, col1 in enumerate(col_list):
         # replace v with ü
         if re.search(r'lv\d', col1):
-            p2 = r'v' if has_notation else r'v\d'
+            p2 = r'v' if has_tone else r'v\d'
             col_list[index] = re.sub(p2, 'ü', col1)
         elif re.search(r'nv\d', col1):
-            p3 = r'v' if has_notation else r'v\d'
+            p3 = r'v' if has_tone else r'v\d'
             col_list[index] = re.sub(p3, 'ü', col1)
         else:
-            if not has_notation:
+            if not has_tone:
                 col_list[index] = re.sub(r'\d', '', col1)
 
     return ' '.join(col_list)
@@ -214,9 +214,11 @@ def start():
     #     'dict_revised_2015_20211228.csv')
     # pinyin_to_ipa('dict_revised_2015_20211228.csv', 
     #     'dict_revised_2015_20211228-notune-ipa.csv')
-    create_uniquep('dict_revised_2015_20211228-notune-ipa.csv',
-        'uniquep-dict_revised_2015_20211228-notune-ipa.csv')
-
+    pinyin_to_ipa('dict_revised_2015_20211228.csv', 
+        'dict_revised_2015_20211228-ipa.csv', has_tone=True)
+    # create_uniquep('dict_revised_2015_20211228-notune-ipa.csv',
+    #     'uniquep-dict_revised_2015_20211228-notune-ipa.csv')
+    
     # pinyin1_to_pinyin2('test2.csv','test2-result.csv')
     # pinyin_to_ipa('test1.csv','test1-result.csv', True)
 
