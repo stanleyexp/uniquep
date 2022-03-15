@@ -132,6 +132,28 @@ class TrieNode():
                 return index, ipa_list[index]
             curr = curr.parent
 
+    def find_uniq_tone(self, ipa_list, leaf_node):
+        curr = leaf_node
+        ipa_list_last_index = len(ipa_list)-1
+        for index in range(ipa_list_last_index, -1, -1):
+            # if curr.parent == root
+            if curr.parent is None:
+                return 0, ipa_list[0]
+            child_num = len(curr.parent.nodes.keys())
+            if child_num > 1:
+                # return index is the index of alphabet and
+                # uniqueness point = alphabet + digit(tone)
+                
+                # if uniqueness point is digit(tone)
+                if (ipa_list[index].isdigit()):
+                    return index-1, ipa_list[index-1] + ipa_list[index]
+                # if uniqueness point is alphabet + digit(tone)
+                if index < ipa_list_last_index and ipa_list[index+1].isdigit():
+                    return index, ipa_list[index] + ipa_list[index+1]
+                # if uniqueness point is alphabet
+                return index, ipa_list[index]
+            curr = curr.parent
+
 
 def split_ipa(ipa):
     ipa_list = list(ipa)
@@ -146,7 +168,7 @@ def split_ipa(ipa):
     return  ipa_list
 
 # return dict[str, (int, str)]
-def build_dic_uniq(lines):
+def build_dic_uniq(lines, has_tone):
     root = TrieNode()
     # dic[leaf_node, TrieNode]
     dict_leaf = dict()
@@ -158,14 +180,21 @@ def build_dic_uniq(lines):
     
     # dic[str, (uniq_ipa_index, uniq_ipa_ch)]
     dic_uniq = dict()
-    for _, col in enumerate(lines[:]):
-        ipa = col[3].strip()
-        leaf_node = dict_leaf[ipa]
-        dic_uniq[ipa] = root.find_uniq(split_ipa(ipa), leaf_node)
+    if not has_tone:
+        for _, col in enumerate(lines[:]):
+            ipa = col[3].strip()
+            leaf_node = dict_leaf[ipa]
+            dic_uniq[ipa] = root.find_uniq(split_ipa(ipa), leaf_node)
+    else:  # has_tone=True
+        for _, col in enumerate(lines[:]):
+            ipa = col[3].strip()
+            leaf_node = dict_leaf[ipa]
+            dic_uniq[ipa] = root.find_uniq_tone(split_ipa(ipa), leaf_node)
+
     return dic_uniq
 
 
-def create_uniquep(input_file, output_file):
+def create_uniquep(input_file, output_file, has_tone=False):
 
     current_dir = path.dirname(__file__)
     input_file = path.join(current_dir, input_file)
@@ -175,7 +204,7 @@ def create_uniquep(input_file, output_file):
         lines = (line.split(",") for line in in_file if line)
         # copy generator
         lines, lines_copy = tee(lines)
-        dict_uniq = build_dic_uniq(list(lines_copy))
+        dict_uniq = build_dic_uniq(list(lines_copy), has_tone)
         with open(output_file, 'w') as out_file:
             writer = csv.writer(out_file, delimiter=',')
             for index, col in enumerate(lines):
@@ -214,10 +243,12 @@ def start():
     #     'dict_revised_2015_20211228.csv')
     # pinyin_to_ipa('dict_revised_2015_20211228.csv', 
     #     'dict_revised_2015_20211228-notune-ipa.csv')
-    pinyin_to_ipa('dict_revised_2015_20211228.csv', 
-        'dict_revised_2015_20211228-ipa.csv', has_tone=True)
+    # pinyin_to_ipa('dict_revised_2015_20211228.csv', 
+    #     'dict_revised_2015_20211228-ipa.csv', has_tone=True)
     # create_uniquep('dict_revised_2015_20211228-notune-ipa.csv',
     #     'uniquep-dict_revised_2015_20211228-notune-ipa.csv')
+    create_uniquep('dict_revised_2015_20211228-ipa.csv',
+        'uniquep-dict_revised_2015_20211228-ipa.csv', has_tone=True)
     
     # pinyin1_to_pinyin2('test2.csv','test2-result.csv')
     # pinyin_to_ipa('test1.csv','test1-result.csv', True)

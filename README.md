@@ -1,6 +1,6 @@
 # uniquep
 
-## Changelog
-- pingyin to IPA (notone)
-- pingyin to IPA (tone)
+- pinyin to IPA (notone)
+- pinyin to IPA (tone)
 - IPA to uniqueness point (notone)
+- IPA to uniqueness point (tone)
