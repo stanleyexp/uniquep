@@ -36,9 +36,7 @@ def pinyin1_to_pinyin2(input_file, output_file):
                     new_row = []
                     new_row.append(col[0])
                     new_row.append(col[1])
-                    # replace tone 5 as ''
-                    ping2 = re.sub(r'5', '',
-                        transcriptions.accented_to_numbered(convert(col[2])))
+                    ping2 = transcriptions.accented_to_numbered2(convert(col[2]))
                     new_row.append(ping2.strip())
                     writer.writerow(new_row)
 
@@ -48,7 +46,7 @@ def pinyin1_to_pinyin2(input_file, output_file):
                     print(str(e))
 
 
-def pinyin_to_ipa(input_file, output_file):
+def pinyin_to_ipa(input_file, output_file, has_notation=False):
     """
     current package: https://github.com/stanleyexp/dragonmapper
     another package: https://github.com/Connum/npm-pinyin2ipa
@@ -68,7 +66,8 @@ def pinyin_to_ipa(input_file, output_file):
                     new_row.append(col[0])
                     new_row.append(col[1])
                     new_row.append(col[2].strip())
-                    ipa = transcriptions.pinyin_to_ipa(convert(col[2]))
+                    ipa = transcriptions.pinyin_to_ipa2(
+                        convert(col[2], has_notation))
                     new_row.append(ipa.strip())
                     writer.writerow(new_row)
 
@@ -217,6 +216,9 @@ def start():
     #     'dict_revised_2015_20211228-notune-ipa.csv')
     create_uniquep('dict_revised_2015_20211228-notune-ipa.csv',
         'uniquep-dict_revised_2015_20211228-notune-ipa.csv')
+
+    # pinyin1_to_pinyin2('test2.csv','test2-result.csv')
+    # pinyin_to_ipa('test1.csv','test1-result.csv', True)
 
 
 if __name__ == "__main__":
