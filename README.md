@@ -1,5 +1,5 @@
 # uniquep
-Mandarin UP engine is a system which searches for uniqueness points of Mandarin syllables
+Mandarin UP detector is a system which detects phonological uniqueness point of Mandarin words
 
 ## Feature
 - pinyin to IPA (notone)
