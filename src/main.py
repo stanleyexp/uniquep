@@ -1,11 +1,11 @@
 import csv
 import sys
-sys.path.append('dragonmapper')
+from os import path, getcwd
+from os.path import join, dirname
+sys.path.append(join(dirname(getcwd()), "dragonmapper"))
 from dragonmapper import transcriptions
-from os import path
 import re
 from itertools import tee
-
 
 def txt_to_csv(input_file, output_file):
     current_dir = path.dirname(__file__)
@@ -194,9 +194,9 @@ def build_dic_uniq(lines, has_tone):
     return dic_uniq
 
 
-def create_uniquep(input_file, output_file, has_tone=False):
+def create_uniquep(input_file, output_file, has_tone=False,
+    current_dir=path.dirname(__file__)):
 
-    current_dir = path.dirname(__file__)
     input_file = path.join(current_dir, input_file)
     output_file = path.join(current_dir, output_file)
 
@@ -249,6 +249,8 @@ def start():
     #     'uniquep-dict_revised_2015_20211228-notune-ipa.csv')
     create_uniquep('dict_revised_2015_20211228-ipa.csv',
         'uniquep-dict_revised_2015_20211228-ipa.csv', has_tone=True)
+
+    
     
     # pinyin1_to_pinyin2('test2.csv','test2-result.csv')
     # pinyin_to_ipa('test1.csv','test1-result.csv', True)
