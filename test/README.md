@@ -1,2 +1,2 @@
 ### Verify uniqueness point
-- [ ] French
+- [x] French

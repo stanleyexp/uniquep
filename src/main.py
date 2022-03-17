@@ -6,6 +6,7 @@ sys.path.append(join(dirname(getcwd()), "dragonmapper"))
 from dragonmapper import transcriptions
 import re
 from itertools import tee
+import pdb
 
 def txt_to_csv(input_file, output_file):
     current_dir = path.dirname(__file__)
@@ -111,20 +112,37 @@ class TrieNode():
         self.parent: TrieNode = None
     def insert(self, ipa, ipa_list, dict_leaf):
         curr = self
-        for ipa_w in ipa_list:
+        for ipa_w_index, ipa_w in enumerate(ipa_list):
+
             if ipa_w not in curr.nodes:
                 child = TrieNode()
                 child.parent = curr
                 curr.nodes[ipa_w] = child
+
+            if ipa_w_index == len(ipa_list)-1:
+                curr = curr.nodes[ipa_w]
+                child = TrieNode()
+                child.parent = curr
+                curr.nodes["$"] = child
+                child.is_leaf = True
+                curr = child
+                break
+
             curr = curr.nodes[ipa_w]
-        curr.is_leaf = True
         dict_leaf[ipa] = curr
 
     # return tuple(int, str):
     def find_uniq(self, ipa_list, leaf_node):
         curr = leaf_node
-        for index in range(len(ipa_list)-1, -1, -1):
-            # if curr.parent == root
+        ipa_list_last_index = len(ipa_list)-1
+        # is end of word a uniqueness point
+        child_num = len(curr.parent.nodes.keys())
+        if child_num > 1:
+            return ipa_list_last_index, ipa_list[-1]
+        
+        # move to end of word
+        curr = curr.parent
+        for index in range(ipa_list_last_index, -1, -1):
             if curr.parent is None:
                 return 0, ipa_list[0]
             child_num = len(curr.parent.nodes.keys())
@@ -135,6 +153,18 @@ class TrieNode():
     def find_uniq_tone(self, ipa_list, leaf_node):
         curr = leaf_node
         ipa_list_last_index = len(ipa_list)-1
+
+        # is end of word a uniqueness point
+        child_num = len(curr.parent.nodes.keys())
+        if child_num > 1:
+            # if uniqueness point is digit(tone)
+            if (ipa_list[-1].isdigit()):
+                return ipa_list_last_index-1, ipa_list[ipa_list_last_index-1] + ipa_list[ipa_list_last_index]
+            # if uniqueness point is alphabet
+            return ipa_list_last_index, ipa_list[-1]
+
+        # move to end of word
+        curr = curr.parent
         for index in range(ipa_list_last_index, -1, -1):
             # if curr.parent == root
             if curr.parent is None:
@@ -177,7 +207,7 @@ def build_dic_uniq(lines, has_tone):
         root.insert(ipa, split_ipa(ipa), dict_leaf)
 
     # print_trie(root, '', level=0, print_list=[])
-    
+
     # dic[str, (uniq_ipa_index, uniq_ipa_ch)]
     dic_uniq = dict()
     if not has_tone:
@@ -190,7 +220,6 @@ def build_dic_uniq(lines, has_tone):
             ipa = col[3].strip()
             leaf_node = dict_leaf[ipa]
             dic_uniq[ipa] = root.find_uniq_tone(split_ipa(ipa), leaf_node)
-
     return dic_uniq
 
 
@@ -251,7 +280,8 @@ def start():
         'uniquep-dict_revised_2015_20211228-ipa.csv', has_tone=True)
 
     
-    
+    # create_uniquep('test3.csv', 'test3-result.csv')
+
     # pinyin1_to_pinyin2('test2.csv','test2-result.csv')
     # pinyin_to_ipa('test1.csv','test1-result.csv', True)
 
