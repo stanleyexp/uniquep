@@ -1,8 +1,5 @@
 import csv
-import sys
-from os import path, getcwd
-from os.path import join, dirname
-sys.path.append(join(dirname(getcwd()), "dragonmapper"))
+from os import path
 from dragonmapper import transcriptions
 import re
 from itertools import tee
