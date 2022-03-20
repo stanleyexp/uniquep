@@ -10,9 +10,12 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
+dragonmapper = {git = "https://github.com/stanleyexp/dragonmapper.git"}
+pycantonese = "^3.4.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0.1"
+english-to-ipa = {git = "https://github.com/mphilli/English-to-IPA.git"}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
